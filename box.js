@@ -1,6 +1,7 @@
 var utils = require("./lib/utils");
 var tmp = require("tmp");
 var path = require("path");
+var fs = require("fs");
 
 var Config = require("truffle-config");
 
@@ -29,6 +30,7 @@ var Box = {
 
   sandbox: function(name, callback) {
     var self = this;
+
     if (typeof name === "function") {
       callback = name;
       name = "default";
@@ -39,12 +41,24 @@ var Box = {
         return callback(err);
       }
 
-      self.unbox("https://github.com/trufflesuite/truffle-init-" + name, dir)
-        .then(function() {
-          var config = Config.load(path.join(dir, "truffle.js"), {});
-          callback(null, config);
-        })
-        .catch(callback);
+      // Copy local project
+      if (fs.existsSync(name)){
+        utils.copyLocalBox(name, dir)
+          .then(function(){
+            var config = Config.load(path.join(dir, "truffle.js"), {});
+            callback(null, config);
+          })
+          .catch(callback);
+
+      // Unbox from Github
+      } else {
+        self.unbox("https://github.com/trufflesuite/truffle-init-" + name, dir)
+          .then(function() {
+            var config = Config.load(path.join(dir, "truffle.js"), {});
+            callback(null, config);
+          })
+          .catch(callback);
+      }
     });
   }
 };
