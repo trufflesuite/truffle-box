@@ -4,6 +4,7 @@ var assert = require("assert");
 
 var Box = require("../");
 
+var LOCAL_BOX = path.join(__dirname, "./localbox");
 var TRUFFLE_BOX_DEFAULT = "git@github.com:trufflesuite/truffle-init-default.git";
 
 describe("Unbox", function() {
@@ -29,6 +30,14 @@ describe("Unbox", function() {
           "Unboxed project should have truffle config."
         );
       });
+  });
+
+  it("sandbox copies a local project", function(done) {
+    Box.sandbox(LOCAL_BOX, (err, truffleConfig) => {
+      assert.ok(truffleConfig);
+      assert.equal(truffleConfig.networks['development'].port, 8545, 'truffle.js should have loaded');
+      done();
+    });
   });
 
   it("ignores files listed in the truffle-init.json file, and removes the truffle-init.json file", function() {
